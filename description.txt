@@ -1,0 +1,28 @@
+ - ADMIN can create other users including other admins or managers
+ - Manager can create other users including other managers but no admins
+ - Anonymous/member can create member
+ - admin/manger can list all users, member can only list himself
+ - member can edit himself, manager can edit members/managers, admin can edit all
+ - member can delete himself, manager can delete members/managers, admin can delete all
+ - admin can create entry as any user, member/manager can create entry only for himself
+ - admin can list all entries, member/manager can list only his entries
+ - admin can delete all entries, member/manager can delete only his entries
+ - all list views should support filtering by search param: /user/list?search=<search phrase>
+ - log in/auth through JWT
+ - pulling weather conditions in the background using celery and requests python libs, celery queue via rabbitmq (linux install), celery (or CRON) should be run in other termina tab as it's separate application from web server
+
+
+token op value
+(xxx) AND (yyy)
+date EQ '2015-01-01'
+def parse_search(search_phrase):
+	left, op, right = xxx(search_phrase)  #re
+	if op == AND:
+		return parse_search(left) & parse(right)
+	elif op == OR:
+		... | ..
+	elif op == EQ:
+		return Q(**{left + "__eq": right})
+	NE
+	GT
+	LT
