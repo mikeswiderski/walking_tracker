@@ -245,37 +245,42 @@ class UsersTests(APITestCase):
             password=self.memberpassword,
         )
         response = self.client.get(
-            reverse('user-detail-update-delete', kwargs={'pk': 1}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_member_user.id}),
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {
-            'id': 1,
+            'id': self.test_member_user.id,
             'username': 'testmemberuser',
             'email': 'testmemberuser@users.com',
             'role': User.MEMBER
         })
         response = self.client.put(
-            reverse('user-detail-update-delete', kwargs={'pk': 1}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_member_user.id}),
             data,
             format='json'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {
-            'id': 1,
+            'id': self.test_member_user.id,
+            'username': 'testmemberuser',
             'email': 'testuser@users.com',
             'role': User.MEMBER
         })
         response = self.client.get(
-            reverse('user-detail-update-delete', kwargs={'pk': 1}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_member_user.id}),
         )
         self.assertEqual(response.data, {
-            'id': 1,
+            'id': self.test_member_user.id,
             'username': 'testmemberuser',
             'email': 'testuser@users.com',
             'role': User.MEMBER
         })
         response = self.client.delete(
-            reverse('user-detail-update-delete', kwargs={'pk': 1})
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_member_user.id})
         )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
@@ -294,7 +299,8 @@ class UsersTests(APITestCase):
         self.assertEqual(User.objects.count(), 4)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         response = self.client.get(
-            reverse('user-detail-update-delete', kwargs={'pk': 4}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': User.objects.filter(username='testuser').first().id}),
         )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
@@ -310,7 +316,8 @@ class UsersTests(APITestCase):
             password=self.memberpassword,
         )
         response = self.client.put(
-            reverse('user-detail-update-delete', kwargs={'pk': 1}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_member_user.id}),
             data,
             format='json'
         )
@@ -328,7 +335,8 @@ class UsersTests(APITestCase):
             password=self.memberpassword,
         )
         response = self.client.put(
-            reverse('user-detail-update-delete', kwargs={'pk': 1}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_member_user.id}),
             data,
             format='json'
         )
@@ -340,7 +348,8 @@ class UsersTests(APITestCase):
             password=self.memberpassword,
         )
         response = self.client.get(
-            reverse('user-detail-update-delete', kwargs={'pk': 2}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_manager_user.id}),
         )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
@@ -350,7 +359,8 @@ class UsersTests(APITestCase):
             password=self.memberpassword,
         )
         response = self.client.get(
-            reverse('user-detail-update-delete', kwargs={'pk': 3}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_manager_user.id}),
         )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
@@ -410,19 +420,19 @@ class UsersTests(APITestCase):
         self.assertEqual(response.data['count'], 3)
         self.assertEqual(response.data['results'], [
             {
-                'id': 1,
+                'id': self.test_member_user.id,
                 'username': 'testmemberuser',
                 'email': 'testmemberuser@users.com',
                 'role': User.MEMBER,
             },
             {
-                'id': 2,
+                'id': self.test_manager_user.id,
                 'username': 'testmanageruser',
                 'email': 'testmanageruser@users.com',
                 'role': User.MANAGER,
             },
             {
-                'id': 3,
+                'id': self.test_admin_user.id,
                 'username': 'testadminuser',
                 'email': 'testadminuser@users.com',
                 'role': User.ADMIN,
@@ -441,37 +451,42 @@ class UsersTests(APITestCase):
             password=self.managerpassword,
         )
         response = self.client.get(
-            reverse('user-detail-update-delete', kwargs={'pk': 2}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_manager_user.id}),
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {
-            'id': 2,
+            'id': self.test_manager_user.id,
             'username': 'testmanageruser',
             'email': 'testmanageruser@users.com',
             'role': User.MANAGER
         })
         response = self.client.put(
-            reverse('user-detail-update-delete', kwargs={'pk': 2}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_manager_user.id}),
             data,
             format='json'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {
-            'id': 2,
+            'id': self.test_manager_user.id,
+            'username': 'testmanageruser',
             'email': 'testuser@users.com',
             'role': User.MANAGER
         })
         response = self.client.get(
-            reverse('user-detail-update-delete', kwargs={'pk': 2}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_manager_user.id}),
         )
         self.assertEqual(response.data, {
-            'id': 2,
+            'id': self.test_manager_user.id,
             'username': 'testmanageruser',
             'email': 'testuser@users.com',
             'role': User.MANAGER
         })
         response = self.client.delete(
-            reverse('user-detail-update-delete', kwargs={'pk': 2})
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_manager_user.id})
         )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
@@ -487,37 +502,42 @@ class UsersTests(APITestCase):
             password=self.managerpassword,
         )
         response = self.client.get(
-            reverse('user-detail-update-delete', kwargs={'pk': 1}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_member_user.id}),
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {
-            'id': 1,
+            'id': self.test_member_user.id,
             'username': 'testmemberuser',
             'email': 'testmemberuser@users.com',
             'role': User.MEMBER
         })
         response = self.client.put(
-            reverse('user-detail-update-delete', kwargs={'pk': 1}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_member_user.id}),
             data,
             format='json'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {
-            'id': 1,
+            'id': self.test_member_user.id,
+            'username': 'testmemberuser',
             'email': 'testuser@users.com',
             'role': User.MEMBER
         })
         response = self.client.get(
-            reverse('user-detail-update-delete', kwargs={'pk': 1}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_member_user.id}),
         )
         self.assertEqual(response.data, {
-            'id': 1,
+            'id': self.test_member_user.id,
             'username': 'testmemberuser',
             'email': 'testuser@users.com',
             'role': User.MEMBER
         })
         response = self.client.delete(
-            reverse('user-detail-update-delete', kwargs={'pk': 1})
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_member_user.id})
         )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
@@ -542,37 +562,42 @@ class UsersTests(APITestCase):
         self.assertEqual(User.objects.count(), 4)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         response = self.client.get(
-            reverse('user-detail-update-delete', kwargs={'pk': 4}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': User.objects.filter(username='testuser').first().id}),
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {
-            'id': 4,
+            'id': User.objects.filter(username='testuser').first().id,
             'username': 'testuser',
             'email': 'testuser@users.com',
             'role': User.MANAGER,
         })
         response = self.client.put(
-            reverse('user-detail-update-delete', kwargs={'pk': 4}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': User.objects.filter(username='testuser').first().id}),
             data_2,
             format='json'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {
-            'id': 4,
+            'id': User.objects.filter(username='testuser').first().id,
+            'username': 'testuser',
             'email': 'test@users.com',
             'role': User.MANAGER
         })
         response = self.client.get(
-            reverse('user-detail-update-delete', kwargs={'pk': 4}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': User.objects.filter(username='testuser').first().id}),
         )
         self.assertEqual(response.data, {
-            'id': 4,
+            'id': User.objects.filter(username='testuser').first().id,
             'username': 'testuser',
             'email': 'test@users.com',
             'role': User.MANAGER
         })
         response = self.client.delete(
-            reverse('user-detail-update-delete', kwargs={'pk': 4})
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': User.objects.filter(username='testuser').first().id})
         )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
@@ -588,19 +613,22 @@ class UsersTests(APITestCase):
             password=self.managerpassword,
         )
         response = self.client.get(
-            reverse('user-detail-update-delete', kwargs={'pk': 3}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_admin_user.id}),
         )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
         response = self.client.put(
-            reverse('user-detail-update-delete', kwargs={'pk': 3}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_admin_user.id}),
             data,
             format='json'
         )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
         response = self.client.delete(
-            reverse('user-detail-update-delete', kwargs={'pk': 3})
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_admin_user.id})
         )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
@@ -616,16 +644,18 @@ class UsersTests(APITestCase):
             password=self.managerpassword,
         )
         response = self.client.put(
-            reverse('user-detail-update-delete', kwargs={'pk': 1}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_member_user.id}),
             data,
             format='json'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response = self.client.get(
-            reverse('user-detail-update-delete', kwargs={'pk': 1}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_member_user.id}),
         )
         self.assertEqual(response.data, {
-            'id': 1,
+            'id': self.test_member_user.id,
             'username': 'testmemberuser',
             'email': 'testmemberuser@users.com',
             'role': User.MANAGER
@@ -643,16 +673,18 @@ class UsersTests(APITestCase):
             password=self.managerpassword,
         )
         response = self.client.put(
-            reverse('user-detail-update-delete', kwargs={'pk': 2}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_manager_user.id}),
             data,
             format='json'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response = self.client.get(
-            reverse('user-detail-update-delete', kwargs={'pk': 2}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_manager_user.id}),
         )
         self.assertEqual(response.data, {
-            'id': 2,
+            'id': self.test_manager_user.id,
             'username': 'testmanageruser',
             'email': 'testmanageruser@users.com',
             'role': User.MEMBER
@@ -670,7 +702,8 @@ class UsersTests(APITestCase):
             password=self.managerpassword,
         )
         response = self.client.put(
-            reverse('user-detail-update-delete', kwargs={'pk': 1}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_member_user.id}),
             data,
             format='json'
         )
@@ -732,19 +765,19 @@ class UsersTests(APITestCase):
         self.assertEqual(response.data['count'], 3)
         self.assertEqual(response.data['results'], [
             {
-                'id': 1,
+                'id': self.test_member_user.id,
                 'username': 'testmemberuser',
                 'email': 'testmemberuser@users.com',
                 'role': User.MEMBER,
             },
             {
-                'id': 2,
+                'id': self.test_manager_user.id,
                 'username': 'testmanageruser',
                 'email': 'testmanageruser@users.com',
                 'role': User.MANAGER,
             },
             {
-                'id': 3,
+                'id': self.test_admin_user.id,
                 'username': 'testadminuser',
                 'email': 'testadminuser@users.com',
                 'role': User.ADMIN,
@@ -763,37 +796,42 @@ class UsersTests(APITestCase):
             password=self.adminpassword,
         )
         response = self.client.get(
-            reverse('user-detail-update-delete', kwargs={'pk': 3}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_admin_user.id}),
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {
-            'id': 3,
+            'id': self.test_admin_user.id,
             'username': 'testadminuser',
             'email': 'testadminuser@users.com',
             'role': User.ADMIN
         })
         response = self.client.put(
-            reverse('user-detail-update-delete', kwargs={'pk': 3}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_admin_user.id}),
             data,
             format='json'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {
-            'id': 3,
+            'id': self.test_admin_user.id,
+            'username': 'testadminuser',
             'email': 'testuser@users.com',
             'role': User.ADMIN
         })
         response = self.client.get(
-            reverse('user-detail-update-delete', kwargs={'pk': 3}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_admin_user.id}),
         )
         self.assertEqual(response.data, {
-            'id': 3,
+            'id': self.test_admin_user.id,
             'username': 'testadminuser',
             'email': 'testuser@users.com',
             'role': User.ADMIN
         })
         response = self.client.delete(
-            reverse('user-detail-update-delete', kwargs={'pk': 3})
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_admin_user.id})
         )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
@@ -809,37 +847,42 @@ class UsersTests(APITestCase):
             password=self.adminpassword,
         )
         response = self.client.get(
-            reverse('user-detail-update-delete', kwargs={'pk': 1}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_member_user.id}),
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {
-            'id': 1,
+            'id': self.test_member_user.id,
             'username': 'testmemberuser',
             'email': 'testmemberuser@users.com',
             'role': User.MEMBER
         })
         response = self.client.put(
-            reverse('user-detail-update-delete', kwargs={'pk': 1}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_member_user.id}),
             data,
             format='json'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {
-            'id': 1,
+            'id': self.test_member_user.id,
+            'username': 'testmemberuser',
             'email': 'testuser@users.com',
             'role': User.MEMBER
         })
         response = self.client.get(
-            reverse('user-detail-update-delete', kwargs={'pk': 1}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_member_user.id}),
         )
         self.assertEqual(response.data, {
-            'id': 1,
+            'id': self.test_member_user.id,
             'username': 'testmemberuser',
             'email': 'testuser@users.com',
             'role': User.MEMBER
         })
         response = self.client.delete(
-            reverse('user-detail-update-delete', kwargs={'pk': 1})
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_member_user.id})
         )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
@@ -855,37 +898,42 @@ class UsersTests(APITestCase):
             password=self.adminpassword,
         )
         response = self.client.get(
-            reverse('user-detail-update-delete', kwargs={'pk': 2}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_manager_user.id}),
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {
-            'id': 2,
+            'id': self.test_manager_user.id,
             'username': 'testmanageruser',
             'email': 'testmanageruser@users.com',
             'role': User.MANAGER
         })
         response = self.client.put(
-            reverse('user-detail-update-delete', kwargs={'pk': 2}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_manager_user.id}),
             data,
             format='json'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {
-            'id': 2,
+            'id': self.test_manager_user.id,
+            'username': 'testmanageruser',
             'email': 'testuser@users.com',
             'role': User.MANAGER
         })
         response = self.client.get(
-            reverse('user-detail-update-delete', kwargs={'pk': 2}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_manager_user.id}),
         )
         self.assertEqual(response.data, {
-            'id': 2,
+            'id': self.test_manager_user.id,
             'username': 'testmanageruser',
             'email': 'testuser@users.com',
             'role': User.MANAGER
         })
         response = self.client.delete(
-            reverse('user-detail-update-delete', kwargs={'pk': 2})
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_manager_user.id})
         )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
@@ -910,37 +958,42 @@ class UsersTests(APITestCase):
         self.assertEqual(User.objects.count(), 4)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         response = self.client.get(
-            reverse('user-detail-update-delete', kwargs={'pk': 4}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': User.objects.filter(username='testuser').first().id}),
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {
-            'id': 4,
+            'id': User.objects.filter(username='testuser').first().id,
             'username': 'testuser',
             'email': 'testuser@users.com',
             'role': User.ADMIN,
         })
         response = self.client.put(
-            reverse('user-detail-update-delete', kwargs={'pk': 4}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': User.objects.filter(username='testuser').first().id}),
             data_2,
             format='json'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {
-            'id': 4,
+            'id': User.objects.filter(username='testuser').first().id,
+            'username': 'testuser',
             'email': 'test@users.com',
             'role': User.ADMIN
         })
         response = self.client.get(
-            reverse('user-detail-update-delete', kwargs={'pk': 4}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': User.objects.filter(username='testuser').first().id}),
         )
         self.assertEqual(response.data, {
-            'id': 4,
+            'id': User.objects.filter(username='testuser').first().id,
             'username': 'testuser',
             'email': 'test@users.com',
             'role': User.ADMIN
         })
         response = self.client.delete(
-            reverse('user-detail-update-delete', kwargs={'pk': 4})
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': User.objects.filter(username='testuser').first().id})
         )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
@@ -956,16 +1009,18 @@ class UsersTests(APITestCase):
             password=self.adminpassword,
         )
         response = self.client.put(
-            reverse('user-detail-update-delete', kwargs={'pk': 1}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_member_user.id}),
             data,
             format='json'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response = self.client.get(
-            reverse('user-detail-update-delete', kwargs={'pk': 1}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_member_user.id}),
         )
         self.assertEqual(response.data, {
-            'id': 1,
+            'id': self.test_member_user.id,
             'username': 'testmemberuser',
             'email': 'testmemberuser@users.com',
             'role': User.MANAGER,
@@ -983,16 +1038,18 @@ class UsersTests(APITestCase):
             password=self.adminpassword,
         )
         response = self.client.put(
-            reverse('user-detail-update-delete', kwargs={'pk': 2}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_manager_user.id}),
             data,
             format='json'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response = self.client.get(
-            reverse('user-detail-update-delete', kwargs={'pk': 2}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_manager_user.id}),
         )
         self.assertEqual(response.data, {
-            'id': 2,
+            'id': self.test_manager_user.id,
             'username': 'testmanageruser',
             'email': 'testmanageruser@users.com',
             'role': User.MEMBER
@@ -1010,16 +1067,18 @@ class UsersTests(APITestCase):
             password=self.adminpassword,
         )
         response = self.client.put(
-            reverse('user-detail-update-delete', kwargs={'pk': 2}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_manager_user.id}),
             data,
             format='json'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response = self.client.get(
-            reverse('user-detail-update-delete', kwargs={'pk': 2}),
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_manager_user.id}),
         )
         self.assertEqual(response.data, {
-            'id': 2,
+            'id': self.test_manager_user.id,
             'username': 'testmanageruser',
             'email': 'testmanageruser@users.com',
             'role': User.ADMIN
