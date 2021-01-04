@@ -45,11 +45,22 @@ class UserAdminUpdateSerializer(serializers.ModelSerializer):
             required=True,
             validators=[UniqueValidator(queryset=User.objects.all())]
             )
+    password = serializers.CharField(
+            min_length=8,
+            write_only=True,
+            )
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'role']
+        fields = ['id', 'username', 'email', 'password', 'role']
         read_only_fields = ['username']
+
+    def update(self, instance, validated_data):
+        instance.email = validated_data['email']
+        instance.role = validated_data['role']
+        instance.set_password(validated_data['password'])
+        instance.save()
+        return instance
 
 
 class UserManagerUpdateSerializer(UserAdminUpdateSerializer):

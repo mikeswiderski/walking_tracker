@@ -268,10 +268,12 @@ class UsersTests(APITestCase):
             'email': 'testuser@users.com',
             'role': User.MEMBER
         })
+
         response = self.client.get(
             reverse('user-detail-update-delete',
                     kwargs={'pk': self.test_member_user.id}),
         )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {
             'id': self.test_member_user.id,
             'username': 'testmemberuser',
@@ -478,6 +480,7 @@ class UsersTests(APITestCase):
             reverse('user-detail-update-delete',
                     kwargs={'pk': self.test_manager_user.id}),
         )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {
             'id': self.test_manager_user.id,
             'username': 'testmanageruser',
@@ -683,6 +686,7 @@ class UsersTests(APITestCase):
             reverse('user-detail-update-delete',
                     kwargs={'pk': self.test_manager_user.id}),
         )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {
             'id': self.test_manager_user.id,
             'username': 'testmanageruser',
@@ -823,6 +827,7 @@ class UsersTests(APITestCase):
             reverse('user-detail-update-delete',
                     kwargs={'pk': self.test_admin_user.id}),
         )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {
             'id': self.test_admin_user.id,
             'username': 'testadminuser',
