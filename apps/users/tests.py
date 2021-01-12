@@ -326,6 +326,26 @@ class UsersTests(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
+    def test_member_can_edit_his_password(self):
+        data = {
+            'password': 'testpassword',
+        }
+        self.client.credentials(HTTP_AUTHORIZATION='JWT ' + self.member_token)
+        response = self.client.patch(
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_member_user.id}),
+            data,
+            format='json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response = self.client.post(
+            self.token_url,
+            {'username': self.memberusername, 'password': 'testpassword'},
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue('access' in response.data)
+
     def test_member_cant_detail_edit_delete_other_member(self):
         data = {
             'username': 'testuser',
@@ -567,6 +587,26 @@ class UsersTests(APITestCase):
                     kwargs={'pk': self.test_manager_user.id})
         )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_manager_can_edit_his_password(self):
+        data = {
+            'password': 'testpassword',
+        }
+        self.client.credentials(HTTP_AUTHORIZATION='JWT ' + self.manager_token)
+        response = self.client.patch(
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_manager_user.id}),
+            data,
+            format='json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response = self.client.post(
+            self.token_url,
+            {'username': self.managerusername, 'password': 'testpassword'},
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue('access' in response.data)
 
     def test_manager_can_detail_edit_delete_member(self):
         data = {
@@ -958,6 +998,26 @@ class UsersTests(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
+    def test_admin_can_edit_his_password(self):
+        data = {
+            'password': 'testpassword',
+        }
+        self.client.credentials(HTTP_AUTHORIZATION='JWT ' + self.admin_token)
+        response = self.client.patch(
+            reverse('user-detail-update-delete',
+                    kwargs={'pk': self.test_admin_user.id}),
+            data,
+            format='json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response = self.client.post(
+            self.token_url,
+            {'username': self.adminusername, 'password': 'testpassword'},
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue('access' in response.data)
+
     def test_admin_can_detail_edit_delete_member(self):
         data = {
             'username': 'testmemberuser',
@@ -1004,7 +1064,7 @@ class UsersTests(APITestCase):
         response = self.client.patch(
             reverse('user-detail-update-delete',
                     kwargs={'pk': self.test_member_user.id}),
-            {'email': 'newuser@users.com', 'role': User.ADMIN },
+            {'email': 'newuser@users.com', 'role': User.ADMIN},
             format='json'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
