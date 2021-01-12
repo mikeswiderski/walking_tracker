@@ -64,17 +64,15 @@ class UserDetail(mixins.RetrieveModelMixin,
         return queryset
 
     def get_serializer_class(self):
-        if self.request.method == 'PUT':
-            if (self.request.user.is_anonymous or
-                    self.request.user.role == User.MEMBER):
+        if self.request.method == 'PUT' or self.request.method == 'PATCH':
+            if self.request.user.role == User.MEMBER:
                 return UserMemberUpdateSerializer
             elif self.request.user.role == User.MANAGER:
                 return UserManagerUpdateSerializer
             elif self.request.user.role == User.ADMIN:
                 return UserAdminUpdateSerializer
         else:
-            if (self.request.user.is_anonymous or
-                    self.request.user.role == User.MEMBER):
+            if self.request.user.role == User.MEMBER:
                 return UserMemberSerializer
             elif self.request.user.role == User.MANAGER:
                 return UserManagerSerializer
@@ -86,6 +84,9 @@ class UserDetail(mixins.RetrieveModelMixin,
 
     def put(self, request, *args, **kwargs):
         return self.update(request, *args, **kwargs)
+
+    def patch(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
