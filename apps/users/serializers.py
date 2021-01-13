@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.contrib.auth.hashers import make_password
 from rest_framework.validators import UniqueValidator
 from apps.users.models import User
 
@@ -45,11 +46,22 @@ class UserAdminUpdateSerializer(serializers.ModelSerializer):
             required=True,
             validators=[UniqueValidator(queryset=User.objects.all())]
             )
+    password = serializers.CharField(
+            min_length=8,
+            write_only=True,
+            )
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'role']
+        fields = ['id', 'username', 'email', 'password', 'role']
         read_only_fields = ['username']
+
+    def update(self, instance, validated_data):
+        if "password" in validated_data:
+            new_password = make_password(validated_data["password"])
+            validated_data["password"] = new_password
+
+        return super().update(instance, validated_data)
 
 
 class UserManagerUpdateSerializer(UserAdminUpdateSerializer):
