@@ -26,7 +26,7 @@ class RecordSerializer(serializers.ModelSerializer):
             'longitude',
             'weather_conditions',
         ]
-        read_only_fields = ['owner', 'weather_conditions']
+        read_only_fields = ['owner', 'created', 'weather_conditions']
 
     def create(self, validated_data):
         weather_conditions = get_weather(
@@ -51,4 +51,4 @@ class AdminRecordSerializer(RecordSerializer):
             'longitude',
             'weather_conditions',
         ]
-        read_only_fields = ['weather_conditions']
+        read_only_fields = ['created', 'weather_conditions']

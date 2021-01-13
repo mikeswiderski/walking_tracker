@@ -15,7 +15,7 @@ class RecordList(mixins.ListModelMixin,
     permission_classes = (IsAuthenticated, )
 
     def get_serializer_class(self):
-        if (self.request.user.role == User.MEMBER):
+        if self.request.user.role == User.MEMBER:
             return RecordSerializer
         elif self.request.user.role == User.MANAGER:
             return RecordSerializer
