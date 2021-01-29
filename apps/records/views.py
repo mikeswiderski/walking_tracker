@@ -32,7 +32,11 @@ class RecordList(mixins.ListModelMixin,
         return queryset
 
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
+        user = self.request.user
+        if user.role == User.ADMIN:
+            serializer.save()
+        else:
+            serializer.save(owner=self.request.user)
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
