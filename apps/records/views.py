@@ -1,12 +1,9 @@
-from apps.records.models import Record
-from apps.users.models import User
-from apps.records.serializers import (
-    RecordSerializer,
-    AdminRecordSerializer,
-)
-from rest_framework import mixins
-from rest_framework import generics
+from rest_framework import generics, mixins
 from rest_framework.permissions import IsAuthenticated
+
+from apps.records.models import Record
+from apps.records.serializers import AdminRecordSerializer, RecordSerializer
+from apps.users.models import User
 
 
 class RecordList(mixins.ListModelMixin,

@@ -1,4 +1,5 @@
 from django.urls import path
+
 from apps.records import views
 
 urlpatterns = [
