@@ -1,10 +1,12 @@
 from django.urls import reverse
-from rest_framework.test import APITestCase, APIClient
-from apps.users.models import User
 from rest_framework import status
+from rest_framework.test import APIClient, APITestCase
+
+from apps.users.models import User
 
 
 class UsersTests(APITestCase):
+
     def setUp(self):
         self.token_url = reverse('token_obtain_pair')
 

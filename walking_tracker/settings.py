@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'apps.users',
+    'apps.records',
 ]
 
 MIDDLEWARE = [
@@ -123,8 +124,10 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+WEATHER_API_KEY = '2007ce43bd33aadfb06920869c93e692'
 
 REST_FRAMEWORK = {
+    'DATETIME_FORMAT': "%Y-%m-%d - %H:%M:%S",
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
     ],
