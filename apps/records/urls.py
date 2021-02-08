@@ -7,6 +7,6 @@ urlpatterns = [
     path(
         '<int:pk>/',
         views.RecordDetail.as_view(),
-        name='record-detail-update-delete',
+        name='record-detail-delete',
     ),
 ]

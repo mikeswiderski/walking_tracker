@@ -71,7 +71,7 @@ class RecordsTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     @patch('apps.records.serializers.get_weather')
-    def test_member_can_create_record_for_himself(self, mock_get_weather):
+    def test_weather_api(self, mock_get_weather):
         mock_get_weather.return_value = 'clear'
         data = {
             "distance": 56,
@@ -84,6 +84,20 @@ class RecordsTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Record.objects.count(), 4)
         self.assertEqual(response.data["weather_conditions"], "clear")
+
+    @patch('apps.records.serializers.get_weather')
+    def test_member_can_create_record_for_himself(self, mock_get_weather):
+        mock_get_weather.return_value = 'clear'
+        data = {
+            "distance": 56,
+            "latitude": 46,
+            "longitude": -120,
+        }
+        self.client.force_authenticate(user=self.test_member_user)
+        response = self.client.post(self.list_create_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Record.objects.count(), 4)
+        self.assertEqual(response.data["owner"], self.test_member_user.id)
 
     @patch('apps.records.serializers.get_weather')
     def test_member_cant_create_record_for_manager_only_for_himself(self, mock_get_weather):
@@ -149,10 +163,9 @@ class RecordsTests(APITestCase):
         }
         self.client.force_authenticate(user=self.test_manager_user)
         response = self.client.post(self.list_create_url, data, format='json')
-        self.assertEqual(mock_get_weather.called, True)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Record.objects.count(), 4)
-        self.assertEqual(response.data["weather_conditions"], "rain")
+        self.assertEqual(response.data["owner"], self.test_manager_user.id)
 
     @patch('apps.records.serializers.get_weather')
     def test_manager_cant_create_record_for_member_only_for_himself(self, mock_get_weather):
@@ -219,10 +232,8 @@ class RecordsTests(APITestCase):
         }
         self.client.force_authenticate(user=self.test_admin_user)
         response = self.client.post(self.list_create_url, data, format='json')
-        self.assertEqual(mock_get_weather.called, True)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Record.objects.count(), 4)
-        self.assertEqual(response.data["weather_conditions"], "sunny")
         self.assertEqual(response.data["owner"], self.test_admin_user.id)
 
     @patch('apps.records.serializers.get_weather')
@@ -236,10 +247,8 @@ class RecordsTests(APITestCase):
         }
         self.client.force_authenticate(user=self.test_admin_user)
         response = self.client.post(self.list_create_url, data, format='json')
-        self.assertEqual(mock_get_weather.called, True)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Record.objects.count(), 4)
-        self.assertEqual(response.data["weather_conditions"], "sunny")
         self.assertEqual(response.data["owner"], self.test_member_user.id)
 
     @patch('apps.records.serializers.get_weather')
@@ -253,10 +262,8 @@ class RecordsTests(APITestCase):
         }
         self.client.force_authenticate(user=self.test_admin_user)
         response = self.client.post(self.list_create_url, data, format='json')
-        self.assertEqual(mock_get_weather.called, True)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Record.objects.count(), 4)
-        self.assertEqual(response.data["weather_conditions"], "sunny")
         self.assertEqual(response.data["owner"], self.test_manager_user.id)
 
     @patch('apps.records.serializers.get_weather')
@@ -329,35 +336,35 @@ class RecordsTests(APITestCase):
         self.client.force_authenticate(user=self.test_member_user)
 
         response = self.client.get(
-            reverse('record-detail-update-delete',
-                    kwargs={'pk': self.test_manager_user.id}),
+            reverse('record-detail-delete',
+                    kwargs={'pk': self.test_manager_record.id}),
         )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         response = self.client.delete(
-            reverse('record-detail-update-delete',
-                    kwargs={'pk': self.test_manager_user.id})
+            reverse('record-detail-delete',
+                    kwargs={'pk': self.test_manager_record.id})
         )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
         response = self.client.get(
-            reverse('record-detail-update-delete',
-                    kwargs={'pk': self.test_admin_user.id}),
+            reverse('record-detail-delete',
+                    kwargs={'pk': self.test_admin_record.id}),
         )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         response = self.client.delete(
-            reverse('record-detail-update-delete',
-                    kwargs={'pk': self.test_admin_user.id})
+            reverse('record-detail-delete',
+                    kwargs={'pk': self.test_admin_record.id})
         )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
         response = self.client.get(
-            reverse('record-detail-update-delete',
-                    kwargs={'pk': self.test_member_user.id}),
+            reverse('record-detail-delete',
+                    kwargs={'pk': self.test_member_record.id}),
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response = self.client.delete(
-            reverse('record-detail-update-delete',
-                    kwargs={'pk': self.test_member_user.id})
+            reverse('record-detail-delete',
+                    kwargs={'pk': self.test_member_record.id})
         )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Record.objects.count(), 2)
@@ -367,35 +374,35 @@ class RecordsTests(APITestCase):
         self.client.force_authenticate(user=self.test_manager_user)
 
         response = self.client.get(
-            reverse('record-detail-update-delete',
-                    kwargs={'pk': self.test_member_user.id}),
+            reverse('record-detail-delete',
+                    kwargs={'pk': self.test_member_record.id}),
         )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         response = self.client.delete(
-            reverse('record-detail-update-delete',
-                    kwargs={'pk': self.test_member_user.id})
+            reverse('record-detail-delete',
+                    kwargs={'pk': self.test_member_record.id})
         )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
         response = self.client.get(
-            reverse('record-detail-update-delete',
-                    kwargs={'pk': self.test_admin_user.id}),
+            reverse('record-detail-delete',
+                    kwargs={'pk': self.test_admin_record.id}),
         )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         response = self.client.delete(
-            reverse('record-detail-update-delete',
-                    kwargs={'pk': self.test_admin_user.id})
+            reverse('record-detail-delete',
+                    kwargs={'pk': self.test_admin_record.id})
         )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
         response = self.client.get(
-            reverse('record-detail-update-delete',
-                    kwargs={'pk': self.test_manager_user.id}),
+            reverse('record-detail-delete',
+                    kwargs={'pk': self.test_manager_record.id}),
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response = self.client.delete(
-            reverse('record-detail-update-delete',
-                    kwargs={'pk': self.test_manager_user.id})
+            reverse('record-detail-delete',
+                    kwargs={'pk': self.test_manager_record.id})
         )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Record.objects.count(), 2)
@@ -405,37 +412,37 @@ class RecordsTests(APITestCase):
         self.client.force_authenticate(user=self.test_admin_user)
 
         response = self.client.get(
-            reverse('record-detail-update-delete',
-                    kwargs={'pk': self.test_member_user.id}),
+            reverse('record-detail-delete',
+                    kwargs={'pk': self.test_member_record.id}),
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response = self.client.delete(
-            reverse('record-detail-update-delete',
-                    kwargs={'pk': self.test_member_user.id})
+            reverse('record-detail-delete',
+                    kwargs={'pk': self.test_member_record.id})
         )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Record.objects.count(), 2)
 
         response = self.client.get(
-            reverse('record-detail-update-delete',
-                    kwargs={'pk': self.test_manager_user.id}),
+            reverse('record-detail-delete',
+                    kwargs={'pk': self.test_manager_record.id}),
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response = self.client.delete(
-            reverse('record-detail-update-delete',
-                    kwargs={'pk': self.test_manager_user.id})
+            reverse('record-detail-delete',
+                    kwargs={'pk': self.test_manager_record.id})
         )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Record.objects.count(), 1)
 
         response = self.client.get(
-            reverse('record-detail-update-delete',
-                    kwargs={'pk': self.test_admin_user.id}),
+            reverse('record-detail-delete',
+                    kwargs={'pk': self.test_admin_record.id}),
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response = self.client.delete(
-            reverse('record-detail-update-delete',
-                    kwargs={'pk': self.test_admin_user.id})
+            reverse('record-detail-delete',
+                    kwargs={'pk': self.test_admin_record.id})
         )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Record.objects.count(), 0)
