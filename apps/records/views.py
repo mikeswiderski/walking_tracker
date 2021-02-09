@@ -1,5 +1,10 @@
-from rest_framework import generics, mixins
+from datetime import date
+
+from django.db.models import Avg
+from rest_framework import generics, mixins, permissions, status
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from apps.records.models import Record
 from apps.records.serializers import AdminRecordSerializer, RecordSerializer
@@ -60,3 +65,39 @@ class RecordDetail(mixins.RetrieveModelMixin,
 
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
+
+
+class AverageDistance(APIView):
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+
+        user = self.request.user
+        queryset = Record.objects.filter(owner_id=user.id)
+
+        today = date.today()
+
+        year = request.GET.get('year', today.year)
+        month = request.GET.get('month', today.month)
+
+        def validate_arg(value):
+            if type(value) == int and value is not None:
+                value = int(value)
+                return value
+            elif value.isnumeric() and value is not None:
+                value = int(value)
+                return value
+
+        year = validate_arg(year)
+        month = validate_arg(month)
+
+        if year and month:
+            queryset = queryset.filter(created__year=year, created__month=month)
+            average_distance = (queryset.aggregate(Avg('distance'))).get('distance__avg')
+            if average_distance is not None:
+                return Response({'average_distance':  average_distance}, status=status.HTTP_200_OK)
+            else:
+                return Response({"average_distance": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response({"average_distance": "Not found."}, status=status.HTTP_404_NOT_FOUND)
