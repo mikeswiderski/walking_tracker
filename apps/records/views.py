@@ -71,33 +71,50 @@ class AverageDistance(APIView):
 
     permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request):
+    def get(self, request, pk):
 
+        try:
+            User.objects.get(id=pk)
+        except User.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        queryset = Record.objects.all()
         user = self.request.user
-        queryset = Record.objects.filter(owner_id=user.id)
+
+        if user.role == User.MEMBER or user.role == User.MANAGER:
+            if user.id == pk:
+                queryset = queryset.filter(owner_id=pk)
+            else:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+        else:
+            queryset = queryset.filter(owner_id=pk)
 
         today = date.today()
 
-        year = request.GET.get('year', today.year)
-        month = request.GET.get('month', today.month)
+        year = request.GET.get('year')
+        month = request.GET.get('month')
 
-        def validate_arg(value):
-            if type(value) == int and value is not None:
-                value = int(value)
-                return value
-            elif value.isnumeric() and value is not None:
-                value = int(value)
-                return value
+        if year is None and month is None:
+            year = today.year
+            month = today.month
 
-        year = validate_arg(year)
-        month = validate_arg(month)
+        try:
+            year = int(year)
+        except ValueError:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        except TypeError:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            month = int(month)
+        except ValueError:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        except TypeError:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
         if year and month:
             queryset = queryset.filter(created__year=year, created__month=month)
             average_distance = (queryset.aggregate(Avg('distance'))).get('distance__avg')
-            if average_distance is not None:
-                return Response({'average_distance':  average_distance}, status=status.HTTP_200_OK)
-            else:
-                return Response({"average_distance": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'average_distance':  average_distance}, status=status.HTTP_200_OK)
         else:
-            return Response({"average_distance": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
