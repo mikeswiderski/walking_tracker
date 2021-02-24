@@ -71,23 +71,19 @@ class AverageDistance(APIView):
 
     permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request, pk):
+    def get(self, request, user_id):
 
         try:
-            User.objects.get(id=pk)
+            User.objects.get(id=user_id)
         except User.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
 
         queryset = Record.objects.all()
         user = self.request.user
 
-        if user.role == User.MEMBER or user.role == User.MANAGER:
-            if user.id == pk:
-                queryset = queryset.filter(owner_id=pk)
-            else:
-                return Response(status=status.HTTP_404_NOT_FOUND)
-        else:
-            queryset = queryset.filter(owner_id=pk)
+        if user.role != User.ADMIN and user.id != user_id:
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        queryset = queryset.filter(owner_id=user_id)
 
         today = date.today()
 
@@ -98,23 +94,25 @@ class AverageDistance(APIView):
             year = today.year
             month = today.month
 
+        if year is None:
+            return Response({"detail": "Must provide year and month"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if month is None:
+            return Response({"detail": "Must provide year and month"}, status=status.HTTP_400_BAD_REQUEST)
+
         try:
             year = int(year)
         except ValueError:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        except TypeError:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "year must be integer"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             month = int(month)
         except ValueError:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        except TypeError:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "month must be integer"}, status=status.HTTP_400_BAD_REQUEST)
 
         if year and month:
             queryset = queryset.filter(created__year=year, created__month=month)
             average_distance = (queryset.aggregate(Avg('distance'))).get('distance__avg')
             return Response({'average_distance':  average_distance}, status=status.HTTP_200_OK)
         else:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "Must provide year and month"}, status=status.HTTP_400_BAD_REQUEST)
