@@ -1,0 +1,54 @@
+import re
+
+import requests
+from django.conf import settings
+from django.db.models import Q
+from rest_framework import status
+from rest_framework.response import Response
+
+
+def parse_search(search_phrase):
+
+    re_par = re.match(r"\s*\(\s*(.+)\)\s+(or|and)\s+\(\s*(.+)\)", search_phrase, re.IGNORECASE)
+    re_no_par = re.match(r"\s*(\S+)\s+(eq|ne|lt|gt)\s+(\S+\s?\S*)", search_phrase, re.IGNORECASE)
+
+    if re_par is not None:
+        search_phrase = re_par.groups()
+    elif re_no_par is not None:
+        search_phrase = re_no_par.groups()
+    elif re_par is None and re_no_par is None:
+        return None
+
+    left, op, right = search_phrase
+
+    left = left.lower()
+    right = right.lower()
+
+    if op.upper() == 'AND':
+        return parse_search(left) & parse_search(right)
+    elif op.upper() == 'OR':
+        return parse_search(left) | parse_search(right)
+    elif op.upper() == 'EQ':
+        return Q(**{left + "__iexact": right})
+    elif op.upper() == 'NE':
+        return ~Q(**{left + "__iexact": right})
+    elif op.upper() == 'GT':
+        return Q(**{left + "__gt": right})
+    elif op.upper() == 'LT':
+        return Q(**{left + "__lt": right})
+    else:
+        return None
+
+
+def get_weather(latitude, longitude):
+
+    api_url = 'http://api.openweathermap.org/data/2.5/weather'
+    appid = settings.WEATHER_API_KEY
+    params = dict(lat=latitude, lon=longitude, appid=appid)
+    response = requests.get(url=api_url, params=params)
+    if response.status_code == 200:
+        r = response.json()
+        description = r['weather'][0]['description']
+        return description
+    else:
+        response.raise_for_status()

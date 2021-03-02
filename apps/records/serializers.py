@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from apps.records.models import Record
-from apps.records.weather_request import get_weather
+from apps.records.help_functions import get_weather
 
 
 class RecordSerializer(serializers.ModelSerializer):
