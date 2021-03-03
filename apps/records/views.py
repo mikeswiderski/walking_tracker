@@ -3,7 +3,7 @@ from rest_framework import generics, mixins, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from apps.records.help_functions import parse_search
+from apps.records.utils import parse_search
 from apps.records.models import Record
 from apps.records.serializers import AdminRecordSerializer, RecordSerializer
 from apps.users.models import User

@@ -535,7 +535,7 @@ class RecordsTests(APITestCase):
         # test NE operator
         response = self.client.get(
             self.list_create_url,
-            {'search': 'owner__id ne 1'},
+            {'search': 'owner ne 1'},
             format='json'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -560,7 +560,7 @@ class RecordsTests(APITestCase):
 
         response = self.client.get(
             self.list_create_url,
-            {'search': 'created__date eq 2020-01-01'},
+            {'search': 'created eq 2020-01-01'},
             format='json'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -574,7 +574,7 @@ class RecordsTests(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 3)
-        
+
         # test AND operator
         response = self.client.get(
             self.list_create_url,
@@ -593,19 +593,27 @@ class RecordsTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 2)
 
-        # test case and space insensitivity
+        # test operator case insensitivity and any number of spaces in search_phrase
         response = self.client.get(
             self.list_create_url,
-            {'search': '(  dIstaNce Gt   5000 )     AnD (  DistaNCE  Lt 10000)'},
+            {'search': '(  distance Gt   5000 )     AnD (  distance  Lt 10000)'},
             format='json'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 2)
 
+        # test user search phrase case sensitive
+        response = self.client.get(
+            self.list_create_url,
+            {'search': 'Weather_conditions eq Light rain'},
+            format='json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
         # test bad operator
         response = self.client.get(
             self.list_create_url,
-            {'search': '(  dIstaNce Gt   5000 )     An (  DistaNCE  Lt 10000)'},
+            {'search': '(  distance Gt   5000 )     An (  distance  Lt 10000)'},
             format='json'
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

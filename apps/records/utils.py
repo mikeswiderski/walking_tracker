@@ -16,28 +16,25 @@ def parse_search(search_phrase):
         search_phrase = re_par.groups()
     elif re_no_par is not None:
         search_phrase = re_no_par.groups()
-    elif re_par is None and re_no_par is None:
+    else:
         return None
 
     left, op, right = search_phrase
-
-    left = left.lower()
-    right = right.lower()
 
     if op.upper() == 'AND':
         return parse_search(left) & parse_search(right)
     elif op.upper() == 'OR':
         return parse_search(left) | parse_search(right)
     elif op.upper() == 'EQ':
-        return Q(**{left + "__iexact": right})
+        return Q(**{left: right})
     elif op.upper() == 'NE':
-        return ~Q(**{left + "__iexact": right})
+        return ~Q(**{left: right})
     elif op.upper() == 'GT':
         return Q(**{left + "__gt": right})
     elif op.upper() == 'LT':
         return Q(**{left + "__lt": right})
     else:
-        return None
+        raise Exception('Wrong value for op')
 
 
 def get_weather(latitude, longitude):
