@@ -110,9 +110,6 @@ class AverageDistance(APIView):
         except ValueError:
             return Response({"detail": "month must be integer"}, status=status.HTTP_400_BAD_REQUEST)
 
-        if year and month:
-            queryset = queryset.filter(created__year=year, created__month=month)
-            average_distance = (queryset.aggregate(Avg('distance'))).get('distance__avg')
-            return Response({'average_distance':  average_distance}, status=status.HTTP_200_OK)
-        else:
-            return Response({"detail": "Must provide year and month"}, status=status.HTTP_400_BAD_REQUEST)
+        queryset = queryset.filter(created__year=year, created__month=month)
+        average_distance = (queryset.aggregate(Avg('distance'))).get('distance__avg')
+        return Response({'average_distance':  average_distance}, status=status.HTTP_200_OK)

@@ -544,3 +544,15 @@ class RecordsTests(APITestCase):
             {'year': 2021, 'month': 6}
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_user_get_current_monthly_and_year_activity_record_if_args_not_provided(self):
+        self.client.force_authenticate(user=self.test_member_user)
+        response = self.client.get(
+            reverse('record-average-distance',
+                    kwargs={'user_id': self.test_member_user.id}),
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data.get('average_distance'),
+            float(self.test_member_record.distance),
+        )
