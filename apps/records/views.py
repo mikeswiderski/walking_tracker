@@ -1,7 +1,11 @@
+from datetime import date
+
 from django.core.exceptions import FieldError, ValidationError
-from rest_framework import generics, mixins, status
+from django.db.models import Avg
+from rest_framework import generics, mixins, permissions, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from apps.records.models import Record
 from apps.records.serializers import AdminRecordSerializer, RecordSerializer
@@ -96,3 +100,51 @@ class RecordDetail(mixins.RetrieveModelMixin,
 
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
+
+
+class AverageDistance(APIView):
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, user_id):
+
+        try:
+            User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        queryset = Record.objects.all()
+        user = self.request.user
+
+        if user.role != User.ADMIN and user.id != user_id:
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        queryset = queryset.filter(owner_id=user_id)
+
+        today = date.today()
+
+        year = request.GET.get('year')
+        month = request.GET.get('month')
+
+        if year is None and month is None:
+            year = today.year
+            month = today.month
+
+        if year is None:
+            return Response({"detail": "Must provide year and month"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if month is None:
+            return Response({"detail": "Must provide year and month"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            year = int(year)
+        except ValueError:
+            return Response({"detail": "year must be integer"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            month = int(month)
+        except ValueError:
+            return Response({"detail": "month must be integer"}, status=status.HTTP_400_BAD_REQUEST)
+
+        queryset = queryset.filter(created__year=year, created__month=month)
+        average_distance = (queryset.aggregate(Avg('distance'))).get('distance__avg')
+        return Response({'average_distance':  average_distance}, status=status.HTTP_200_OK)

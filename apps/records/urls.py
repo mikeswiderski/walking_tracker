@@ -9,4 +9,5 @@ urlpatterns = [
         views.RecordDetail.as_view(),
         name='record-detail-delete',
     ),
+    path('distance/<int:user_id>/', views.AverageDistance.as_view(), name='record-average-distance'),
 ]

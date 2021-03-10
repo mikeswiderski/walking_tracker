@@ -633,3 +633,113 @@ class RecordsTests(APITestCase):
             format='json'
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_member_can_request_only_his_monthly_activity_record(self):
+        self.client.force_authenticate(user=self.test_member_user)
+        response = self.client.get(
+            reverse('record-average-distance',
+                    kwargs={'user_id': self.test_member_user.id}),
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response = self.client.get(
+            reverse('record-average-distance',
+                    kwargs={'user_id': self.test_manager_user.id}),
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        response = self.client.get(
+            reverse('record-average-distance',
+                    kwargs={'user_id': self.test_admin_user.id}),
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_manager_can_request_only_his_monthly_activity_record(self):
+        self.client.force_authenticate(user=self.test_manager_user)
+        response = self.client.get(
+            reverse(
+                'record-average-distance',
+                kwargs={'user_id': self.test_manager_user.id}),
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response = self.client.get(
+            reverse('record-average-distance',
+                    kwargs={'user_id': self.test_member_user.id}),
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        response = self.client.get(
+            reverse('record-average-distance',
+                    kwargs={'user_id': self.test_admin_user.id}),
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_admin_can_request_any_user_monthly_activity_record(self):
+        self.client.force_authenticate(user=self.test_admin_user)
+        response = self.client.get(
+            reverse('record-average-distance',
+                    kwargs={'user_id': self.test_admin_user.id}),
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response = self.client.get(
+            reverse('record-average-distance',
+                    kwargs={'user_id': self.test_member_user.id}),
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response = self.client.get(
+            reverse('record-average-distance',
+                    kwargs={'user_id': self.test_manager_user.id}),
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_user_cant_request_his_monthly_activity_record_providing_only_year(self):
+        self.client.force_authenticate(user=self.test_member_user)
+        response = self.client.get(
+            reverse('record-average-distance',
+                    kwargs={'user_id': self.test_member_user.id}),
+            {'year': 2021}
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_user_cant_request_his_monthly_activity_record_providing_only_month(self):
+        self.client.force_authenticate(user=self.test_member_user)
+        response = self.client.get(
+            reverse('record-average-distance',
+                    kwargs={'user_id': self.test_member_user.id}),
+            {'month': 1}
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_user_cant_request_his_monthly_activity_record_providing_non_int_args(self):
+        self.client.force_authenticate(user=self.test_member_user)
+        response = self.client.get(
+            reverse('record-average-distance',
+                    kwargs={'user_id': self.test_member_user.id}),
+            {'year': 'two', 'month': 'six'}
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_user_can_request_his_monthly_activity_record_providing_int_args(self):
+        self.client.force_authenticate(user=self.test_member_user)
+        response = self.client.get(
+            reverse('record-average-distance',
+                    kwargs={'user_id': self.test_member_user.id}),
+            {'year': 2021, 'month': 6}
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_user_get_current_monthly_and_year_activity_record_if_args_not_provided(self):
+        self.client.force_authenticate(user=self.test_member_user)
+        response = self.client.get(
+            reverse('record-average-distance',
+                    kwargs={'user_id': self.test_member_user.id}),
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data.get('average_distance'),
+            float(self.test_member_record.distance),
+        )
