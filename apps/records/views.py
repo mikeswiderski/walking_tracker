@@ -1,11 +1,11 @@
-from django.core.exceptions import FieldError
+from django.core.exceptions import FieldError, ValidationError
 from rest_framework import generics, mixins, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from apps.records.utils import parse_search
 from apps.records.models import Record
 from apps.records.serializers import AdminRecordSerializer, RecordSerializer
+from apps.records.utils import parse_search
 from apps.users.models import User
 
 
@@ -45,7 +45,13 @@ class RecordList(mixins.ListModelMixin,
         search = request.GET.get('search')
 
         if search is not None:
-            result = parse_search(search)
+            try:
+                result = parse_search(search)
+            except ValidationError:
+                return Response(
+                    {"detail": "Bad search phrase, try again."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             if result is not None:
                 try:
                     queryset = queryset.filter(result)

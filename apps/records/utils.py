@@ -2,6 +2,7 @@ import re
 
 import requests
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db.models import Q
 from rest_framework import status
 from rest_framework.response import Response
@@ -17,7 +18,7 @@ def parse_search(search_phrase):
     elif re_no_par is not None:
         search_phrase = re_no_par.groups()
     else:
-        return None
+        raise ValidationError('Wrong value for search_phrase')
 
     left, op, right = search_phrase
 
@@ -34,7 +35,7 @@ def parse_search(search_phrase):
     elif op.upper() == 'LT':
         return Q(**{left + "__lt": right})
     else:
-        raise Exception('Wrong value for op')
+        raise ValidationError('Wrong value for op')
 
 
 def get_weather(latitude, longitude):
