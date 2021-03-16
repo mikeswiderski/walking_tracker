@@ -56,17 +56,12 @@ class RecordList(mixins.ListModelMixin,
                     {"detail": "Bad search phrase, try again."},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-            if result is not None:
-                try:
-                    queryset = queryset.filter(result)
-                except (ValueError, FieldError):
-                    return Response(
-                        {"detail": "Bad Value(s) for field(s) or bad field name(s)"},
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
-            else:
+
+            try:
+                queryset = queryset.filter(result)
+            except (ValueError, FieldError):
                 return Response(
-                    {"detail": "Bad search phrase, try again."},
+                    {"detail": "Bad Value(s) for field(s) or bad field name(s)"},
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
