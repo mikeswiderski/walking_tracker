@@ -447,6 +447,193 @@ class RecordsTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Record.objects.count(), 0)
 
+    @patch('django.utils.timezone.now')
+    def test_search_ability(self, mock_now):
+
+        self.assertEqual(Record.objects.count(), 3)
+
+        mock_now.return_value = '2021-01-23'
+        Record.objects.create(
+            owner=self.test_manager_user,
+            distance="45",
+            latitude="54",
+            longitude="89",
+            weather_conditions="clear sky",
+        )
+
+        mock_now.return_value = '2020-05-21'
+        Record.objects.create(
+            owner=self.test_admin_user,
+            distance="85",
+            latitude="74",
+            longitude="105",
+            weather_conditions="overcast clouds",
+        )
+
+        mock_now.return_value = '2019-07-28'
+        Record.objects.create(
+            owner=self.test_member_user,
+            distance="250",
+            latitude="90",
+            longitude="180",
+            weather_conditions="light rain",
+        )
+
+        mock_now.return_value = '2020-12-05'
+        Record.objects.create(
+            owner=self.test_member_user,
+            distance="8500",
+            latitude="-33",
+            longitude="133",
+            weather_conditions="few clouds",
+        )
+
+        mock_now.return_value = '2019-07-14'
+        Record.objects.create(
+            owner=self.test_member_user,
+            distance="50060",
+            latitude="90",
+            longitude="-134",
+            weather_conditions="broken clouds",
+        )
+
+        mock_now.return_value = '2020-01-01'
+        Record.objects.create(
+            owner=self.test_member_user,
+            distance="8554",
+            latitude="48",
+            longitude="-79",
+            weather_conditions="overcast clouds",
+        )
+
+        mock_now.return_value = '2020-12-31'
+        Record.objects.create(
+            owner=self.test_member_user,
+            distance="100",
+            latitude="-4",
+            longitude="178",
+            weather_conditions="overcast clouds",
+        )
+
+        self.client.force_authenticate(user=self.test_member_user)
+        response = self.client.get(self.list_create_url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # member can only list his records
+        self.assertEqual(Record.objects.count(), 10)
+        self.assertEqual(response.data['count'], 6)
+
+        # test EQ operator
+        response = self.client.get(
+            self.list_create_url,
+            {'search': 'weather_conditions eq overcast clouds'},
+            format='json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 2)
+
+        # test NE operator
+        response = self.client.get(
+            self.list_create_url,
+            {'search': 'owner ne 1'},
+            format='json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 0)
+
+        response = self.client.get(
+            self.list_create_url,
+            {'search': 'owner lt 3'},
+            format='json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 6)
+
+        # test GT opertor
+        response = self.client.get(
+            self.list_create_url,
+            {'search': 'created gt 2020-01-01'},
+            format='json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 3)
+
+        response = self.client.get(
+            self.list_create_url,
+            {'search': 'created eq 2020-01-01'},
+            format='json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+
+        # test LT operator
+        response = self.client.get(
+            self.list_create_url,
+            {'search': 'distance lt 500'},
+            format='json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 3)
+
+        # test AND operator
+        response = self.client.get(
+            self.list_create_url,
+            {'search': '(distance eq 250) and (weather_conditions eq light rain)'},
+            format='json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+
+        # test OR operator
+        response = self.client.get(
+            self.list_create_url,
+            {'search': '(distance eq 250) or (distance eq 8500)'},
+            format='json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 2)
+
+        # test operator case insensitivity and any number of spaces in search_phrase
+        response = self.client.get(
+            self.list_create_url,
+            {'search': '(  distance Gt   5000 )     AnD (  distance  Lt 10000)'},
+            format='json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 2)
+
+        # test user search phrase case sensitive
+        response = self.client.get(
+            self.list_create_url,
+            {'search': 'Weather_conditions eq Light rain'},
+            format='json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # test bad operator
+        response = self.client.get(
+            self.list_create_url,
+            {'search': '(  distance Gt   5000 )     An (  distance  Lt 10000)'},
+            format='json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # test bad field name search
+        response = self.client.get(
+            self.list_create_url,
+            {'search': 'speed eq 78'},
+            format='json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # test bad field value search
+        response = self.client.get(
+            self.list_create_url,
+            {'search': 'id lt seven'},
+            format='json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
     def test_member_can_request_only_his_monthly_activity_record(self):
         self.client.force_authenticate(user=self.test_member_user)
         response = self.client.get(

@@ -1,5 +1,6 @@
 from datetime import date
 
+from django.core.exceptions import FieldError, ValidationError
 from django.db.models import Avg
 from rest_framework import generics, mixins, permissions, status
 from rest_framework.permissions import IsAuthenticated
@@ -8,6 +9,7 @@ from rest_framework.views import APIView
 
 from apps.records.models import Record
 from apps.records.serializers import AdminRecordSerializer, RecordSerializer
+from apps.records.utils import parse_search
 from apps.users.models import User
 
 
@@ -41,7 +43,35 @@ class RecordList(mixins.ListModelMixin,
             serializer.save(owner=self.request.user)
 
     def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
+
+        queryset = self.filter_queryset(self.get_queryset())
+
+        search = request.GET.get('search')
+
+        if search is not None:
+            try:
+                result = parse_search(search)
+            except ValidationError:
+                return Response(
+                    {"detail": "Bad search phrase, try again."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            try:
+                queryset = queryset.filter(result)
+            except (ValueError, FieldError):
+                return Response(
+                    {"detail": "Bad Value(s) for field(s) or bad field name(s)"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
         return self.create(request, *args, **kwargs)
